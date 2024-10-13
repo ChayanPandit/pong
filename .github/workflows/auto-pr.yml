@@ -2,11 +2,11 @@ name: Demo to create automatic PR
 
 on:
   push:
-    branches:
+    branches-ignore:
       - main
 
 jobs:
-  updateAuthor:
+  createPR:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
@@ -21,12 +21,18 @@ jobs:
       - name: Raise PR
         uses: peter-evans/create-pull-request@v3
         with:
-          branch: "auto-pr-branch"
+          branch: ${{ github.ref_name }}
           base: main
-          title: "Auto pull request"
-          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
-          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}">
-          body:
-            This is to show automatic PR creation
+          title: "Auto pull request ${{ github.ref_name }}"
+          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
+          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
+          body: |
+            This PR merges ${{ github.ref_name }} into main
           token: ${{ secrets.GITHUB_TOKEN }}
-          delete-branch: true
+
+      - name: Delete branch after PR merge
+        if: ${{ github.event.action == 'closed' && github.event.pull_request.merged }}
+        run: |
+          git push origin --delete ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -39,4 +39,4 @@ jobs:
             This PR was automatically generated from the branch `${{ github.ref }}`.
               
             ### Changes:
-            ${{ steps.extract_commits.outputs.commits.replace('\n', '\n- ') }}
+            - ${{ steps.extract_commits.outputs.commits }}

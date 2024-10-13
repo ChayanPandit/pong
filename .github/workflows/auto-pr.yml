@@ -34,7 +34,7 @@ jobs:
             echo "body=${new_body}" >> $GITHUB_ENV
           else
             existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[0].body')
-            new_body="${existing_body}\n${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
+            new_body="${existing_body}\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
             echo "body=${new_body}" >> $GITHUB_ENV
           fi
 

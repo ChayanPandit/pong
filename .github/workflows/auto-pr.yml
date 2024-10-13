@@ -40,12 +40,17 @@ jobs:
           fi
           new_body="${new_body//$'\n'/\\n}"
           echo "body=${new_body}" >> $GITHUB_ENV
+          if [[ "$branch_exists" -eq 1 ]]; then
+            pr_number=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[] | select(.head.ref=="'${{ github.ref_name }}'") | .number')
+            echo "pr_number=$pr_number" >> $GITHUB_ENV
+          fi
+
 
       - name: Update Pull Request
         if: env.branch_exists == '1'
         uses: octokit/request-action@v2.x
         with:
-          route: PATCH /repos/${{ github.repository }}/pulls/${{ fromJson(steps.check_pr.outputs.data) | map(select(.head.ref == github.ref_name)) | .[0].number }}
+          route: PATCH /repos/${{ github.repository }}/pulls/${{ env.pr_number }}
           token: ${{ secrets.GITHUB_TOKEN }}
           data: '{"body": "${{ env.body }}"}'
 

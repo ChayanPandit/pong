@@ -25,6 +25,7 @@ jobs:
           mediaType: 'application/vnd.github.v3+json'
           headers: '{"Accept": "application/vnd.github.v3+json"}'
           token: ${{ secrets.GITHUB_TOKEN }}
+          query: head=${{ github.repository }}:${{ github.ref }}
 
       - name: Prepare Pull Request Body
         id: prepare_body

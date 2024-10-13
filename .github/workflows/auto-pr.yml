@@ -48,7 +48,7 @@ jobs:
           data: '{"body": "${{ env.body }}"}'
 
       - name: Create New Pull Request
-        if: steps.check_pr.outputs.data == ''
+        if: ${{ fromJson(steps.check_pr.outputs.data) == null }}
         uses: peter-evans/create-pull-request@v3
         with:
           branch: ${{ github.ref }}

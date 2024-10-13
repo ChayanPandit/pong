@@ -10,14 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: extract git commit data
+      - name: Extract git commit data
         uses: rlespinasse/git-commit-data-action@v1.x
 
-      - name: create Pull Request
+      - name: Check for existing pull request
+        id: check_pr
+        uses: octokit/request-action@v2
+        with:
+          route: GET /repos/${{ github.repository }}/pulls
+          mediaType: 'application/vnd.github.v3+json'
+          headers: '{"Accept": "application/vnd.github.v3+json"}'
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request
         id: create_pr
+        if: ${{ fromJson(steps.check_pr.outputs.data) == null }}
         uses: peter-evans/create-pull-request@v3
         with:
           branch: ${{ github.ref }}

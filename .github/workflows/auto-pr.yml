@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: checkout code
         uses: actions/checkout@v2
 
-      - name: Extract git commit data
+      - name: extract git commit data
         uses: rlespinasse/git-commit-data-action@v1.x
 
-      - name: Create Pull Request
+      - name: create Pull Request
         id: create_pr
         uses: peter-evans/create-pull-request@v3
         with:

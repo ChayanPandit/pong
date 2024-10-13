@@ -21,38 +21,45 @@ jobs:
         uses: octokit/request-action@v2.x
         with:
           route: GET /repos/${{ github.repository }}/pulls
+          state: open
           mediaType: 'application/vnd.github.v3+json'
           headers: '{"Accept": "application/vnd.github.v3+json"}'
           token: ${{ secrets.GITHUB_TOKEN }}
-          query: head=${{ github.repository }}:${{ github.ref }}
 
       - name: Prepare Pull Request Body
         id: prepare_body
         run: |
+          branch_exists=$(echo '${{ steps.check_pr.outputs.data }}' | jq '[.[] | select(.head.ref=="'${{ github.ref_name }}'")] | length')
+          echo "branch_exists=$branch_exists" >> $GITHUB_ENV
           new_body=""
-          if [[ "$(echo '${{ steps.check_pr.outputs.data }}' | jq '. | length')" -eq 0 ]]; then
-            new_body="This PR was auto-generated from the branch \`${{ github.ref }}\`.\n\n### Changes:\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
+          if [[ "$branch_exists" -eq 0 ]]; then
+            new_body="This PR was auto-generated from the branch \`${{ github.ref_name }}\`.\n\n### Changes:\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
           else
-            existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[0].body')
+            existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[] | select(.head.ref=="'${{ github.ref_name }}'") | .body')
             new_body="${existing_body}\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
           fi
           new_body="${new_body//$'\n'/\\n}"
           echo "body=${new_body}" >> $GITHUB_ENV
+          if [[ "$branch_exists" -eq 1 ]]; then
+            pr_number=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[] | select(.head.ref=="'${{ github.ref_name }}'") | .number')
+            echo "pr_number=$pr_number" >> $GITHUB_ENV
+          fi
+
 
       - name: Update Pull Request
-        if: steps.check_pr.outputs.data != ''
+        if: env.branch_exists == '1'
         uses: octokit/request-action@v2.x
         with:
-          route: PATCH /repos/${{ github.repository }}/pulls/${{ fromJson(steps.check_pr.outputs.data)[0].number }}
+          route: PATCH /repos/${{ github.repository }}/pulls/${{ env.pr_number }}
           token: ${{ secrets.GITHUB_TOKEN }}
           data: '{"body": "${{ env.body }}"}'
 
       - name: Create New Pull Request
-        if: steps.check_pr.outputs.data == ''
+        if: env.branch_exists == '0'
         uses: peter-evans/create-pull-request@v3
         with:
           branch: ${{ github.ref }}
           base: main
-          title: 'Automated PR: ${{ github.ref }}'
+          title: 'Automated PR: ${{ github.ref_name }}'
           token: ${{ secrets.GITHUB_TOKEN }}
           body: ${{ env.body }}

@@ -1,38 +1,58 @@
-#name: Demo to create automatic PR
-#
-#on:
-#  push:
-#    branches-ignore:
-#      - main
-#
-#jobs:
-#  createPR:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Check out the code
-#        uses: actions/checkout@v2
-#
-#      - name: Extract git commit data
-#        uses: rlespinasse/git-commit-data-action@v1.x
-#
-#      - name: Update author information
-#        run: echo ${{ env.GIT_COMMIT_AUTHOR_NAME }} > AUTHOR
-#
-#      - name: Raise PR
-#        uses: peter-evans/create-pull-request@v3
-#        with:
-#          branch: ${{ github.ref_name }}
-#          base: main
-#          title: "Auto pull request ${{ github.ref_name }}"
-#          committer: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
-#          author: ${{ env.GIT_COMMIT_AUTHOR_NAME }} <${{ env.GIT_COMMIT_AUTHOR_EMAIL }}>
-#          body: |
-#            This PR merges ${{ github.ref_name }} into main
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Delete branch after PR merge
-#        if: ${{ github.event.action == 'closed' && github.event.pull_request.merged }}
-#        run: |
-#          git push origin --delete ${{ github.ref_name }}
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+name: Create Pull Request on Push
+
+on:
+  push:
+    branches-ignore:
+      - 'main'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Extract git commit data
+        uses: rlespinasse/git-commit-data-action@v1.x
+
+      - name: Check for existing pull request
+        id: check_pr
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.repository }}/pulls
+          mediaType: 'application/vnd.github.v3+json'
+          headers: '{"Accept": "application/vnd.github.v3+json"}'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          query: head=${{ github.repository }}:${{ github.ref }}
+
+      - name: Prepare Pull Request Body
+        id: prepare_body
+        run: |
+          new_body=""
+          if [[ "$(echo '${{ steps.check_pr.outputs.data }}' | jq '. | length')" -eq 0 ]]; then
+            new_body="This PR was auto-generated from the branch \`${{ github.ref }}\`.\n\n### Changes:\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
+          else
+            existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[0].body')
+            new_body="${existing_body}\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
+          fi
+          new_body="${new_body//$'\n'/\\n}"
+          echo "body=${new_body}" >> $GITHUB_ENV
+
+      - name: Update Pull Request
+        if: steps.check_pr.outputs.data != ''
+        uses: octokit/request-action@v2.x
+        with:
+          route: PATCH /repos/${{ github.repository }}/pulls/${{ fromJson(steps.check_pr.outputs.data)[0].number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          data: '{"body": "${{ env.body }}"}'
+
+      - name: Create New Pull Request
+        if: steps.check_pr.outputs.data == ''
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: ${{ github.ref }}
+          base: main
+          title: 'Automated PR: ${{ github.ref }}'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: ${{ env.body }}

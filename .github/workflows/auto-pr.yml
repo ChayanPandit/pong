@@ -20,9 +20,7 @@ jobs:
         id: check_pr
         uses: octokit/request-action@v2.x
         with:
-          route: GET /repos/${{ github.repository }}/pulls
-          head_ref: ${{ github.ref_name }}
-          state: open
+          route: GET /repos/${{ github.repository }}/pulls?head=${{ github.repository }}:${{ github.ref_name }}&state=open
           mediaType: 'application/vnd.github.v3+json'
           headers: '{"Accept": "application/vnd.github.v3+json"}'
           token: ${{ secrets.GITHUB_TOKEN }}

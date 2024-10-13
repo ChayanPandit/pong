@@ -8,6 +8,7 @@ public class Rect {
 
     public Rect(double x, double y, double width, double height, Color color) {
         this.x = x;
+
         this.y = y;
         this.width = width;
         this.height = height;

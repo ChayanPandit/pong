@@ -17,18 +17,8 @@ jobs:
         id: extract_commits
         uses: rlespinasse/git-commit-data-action@v1.x
 
-      - name: Check for existing pull request
-        id: check_pr
-        uses: octokit/request-action@v2.x
-        with:
-          route: GET /repos/${{ github.repository }}/pulls
-          mediaType: 'application/vnd.github.v3+json'
-          headers: '{"Accept": "application/vnd.github.v3+json"}'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Pull Request
+      - name: Create or Update Pull Request
         id: create_pr
-        if: ${{ fromJson(steps.check_pr.outputs.data) == null }}
         uses: peter-evans/create-pull-request@v3
         with:
           branch: ${{ github.ref }}
@@ -40,3 +30,5 @@ jobs:
               
             ### Changes:
             - ${{ steps.extract_commits.outputs.commits }}
+
+          update: true

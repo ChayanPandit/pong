@@ -29,15 +29,15 @@ jobs:
       - name: Prepare Pull Request Body
         id: prepare_body
         run: |
+          new_body=""
           if [[ "$(echo '${{ steps.check_pr.outputs.data }}' | jq '. | length')" -eq 0 ]]; then
             new_body="This PR was auto-generated from the branch \`${{ github.ref }}\`.\n\n### Changes:\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
-            echo "body=${new_body}" >> $GITHUB_ENV
           else
             existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[0].body')
             new_body="${existing_body}\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
-            new_body="${new_body//$'\n'/\\n}"
-            echo "body=${new_body}" >> $GITHUB_ENV
           fi
+          new_body="${new_body//$'\n'/\\n}"
+          echo "body=${new_body}" >> $GITHUB_ENV
 
       - name: Update Pull Request
         if: steps.check_pr.outputs.data != ''

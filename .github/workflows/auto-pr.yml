@@ -41,7 +41,7 @@ jobs:
         if: steps.check_pr.outputs.data != ''
         uses: octokit/request-action@v2.x
         with:
-          route: PATCH /repos/${{ github.repository }}/pulls/${{ steps.check_pr.outputs.data[0].number }}
+          route: PATCH /repos/${{ github.repository }}/pulls/${{ fromJson(steps.check_pr.outputs.data)[0].number }}
           token: ${{ secrets.GITHUB_TOKEN }}
           data: '{"body": "${{ env.body }}"}'
 

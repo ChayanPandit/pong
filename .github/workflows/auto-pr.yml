@@ -31,10 +31,10 @@ jobs:
         id: prepare_body
         run: |
           if [[ "$(echo '${{ steps.check_pr.outputs.data }}' | jq '. | length')" -eq 0 ]]; then
-            echo "body=This PR was auto-generated from the branch \`${{ github.ref }}\`.\n\n### Changes:\n- ${{ steps.extract_commits.outputs.commits }}" >> $GITHUB_ENV
+            printf "body=This PR was auto-generated from the branch \`${{ github.ref }}\`.\n\n### Changes:\n- %s" "${{ steps.extract_commits.outputs.commits }}" >> $GITHUB_ENV
           else
             existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[0].body')
-            echo "body=${existing_body}\n- ${{ steps.extract_commits.outputs.commits }}" >> $GITHUB_ENV
+            printf "body=%s\n- %s" "${existing_body}" "${{ steps.extract_commits.outputs.commits }}" >> $GITHUB_ENV
           fi
 
       - name: Update Pull Request

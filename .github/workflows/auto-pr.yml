@@ -36,7 +36,7 @@ jobs:
           title: 'Automated PR: ${{ github.ref }}'
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
-            This PR was automatically generated from the branch `${{ github.ref }}`.
+            This PR was auto-generated from the branch `${{ github.ref }}`.
               
             ### Changes:
             - ${{ steps.extract_commits.outputs.commits }}

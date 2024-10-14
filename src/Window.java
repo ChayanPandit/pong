@@ -11,6 +11,7 @@ public class Window extends JFrame implements Runnable {
     public AIController aiController;
     public Text leftScoreText, rightScoreText;
     public int leftScore, rightScore;
+    private boolean isRunning = true;
 
     public Window() {
         this.setSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
@@ -27,8 +28,8 @@ public class Window extends JFrame implements Runnable {
         leftScore = 0;
         rightScore = 0;
 
-        leftScoreText = new Text(Integer.toString(leftScore), new Font("Arial", Font.PLAIN, Constants.TEXT_SIZE), Constants.TEXT_X_POS, Constants.TEXT_Y_POS);
-        rightScoreText = new Text(Integer.toString(rightScore), new Font("Arial", Font.PLAIN, Constants.TEXT_SIZE), Constants.SCREEN_WIDTH - Constants.TEXT_X_POS - Constants.TEXT_SIZE, Constants.TEXT_Y_POS);
+        leftScoreText = new Text(leftScore, new Font("Arial", Font.PLAIN, Constants.TEXT_SIZE), Constants.TEXT_X_POS, Constants.TEXT_Y_POS);
+        rightScoreText = new Text(rightScore, new Font("Arial", Font.PLAIN, Constants.TEXT_SIZE), Constants.SCREEN_WIDTH - Constants.TEXT_X_POS - Constants.TEXT_SIZE, Constants.TEXT_Y_POS);
 
         playerOne = new Rect(Constants.HZ_PADDING,40,Constants.PADDLE_WIDTH,Constants.PADDLE_HEIGHT, Constants.PADDLE_COLOR);
         playerController = new PlayerController(playerOne, keyListener);
@@ -66,17 +67,22 @@ public class Window extends JFrame implements Runnable {
         ballRect.draw(g2);
     }
 
+    public void stop() {
+        isRunning = false;
+    }
+
     @Override
     public void run() {
         double lastFrameTime = 0.0;
-        while (true) {
+        while (isRunning) {
             double time = Time.getTime();
             double deltatime = time - lastFrameTime;
             lastFrameTime = time;
 
             update(deltatime);
-
         }
+        this.dispose();
+        return;
     }
 
 }

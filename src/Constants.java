@@ -22,5 +22,5 @@ public class Constants {
     public static final int TEXT_X_POS = 10;
     public static final int TEXT_SIZE = 40;
 
-    public static final int WIN_SCORE = 11;
+    public static final int WIN_SCORE = 1;
 }

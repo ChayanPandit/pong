@@ -38,7 +38,7 @@ jobs:
             existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[] | select(.head.ref=="'${{ github.ref_name }}'") | .body')
             new_body="${existing_body}\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
           fi
-          new_body="${new_body//$'\n'/\\n}"
+          new_body=$(echo "$new_body" | sed ':a;N;$!ba;s/\n/\\n/g')
           echo "body=${new_body}" >> $GITHUB_ENV
           if [[ "$branch_exists" -eq 1 ]]; then
             pr_number=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[] | select(.head.ref=="'${{ github.ref_name }}'") | .number')

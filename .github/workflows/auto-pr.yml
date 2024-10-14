@@ -33,7 +33,7 @@ jobs:
           echo "branch_exists=$branch_exists" >> $GITHUB_ENV
           new_body=""
           if [[ "$branch_exists" -eq 0 ]]; then
-            new_body="This PR was auto-generated from the branch \`${{ github.ref_name }}\`.\n\n### Changes:\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"
+            new_body="This PR was auto-generated from the branch \`${{ github.ref_name }}\`.\n\n### Changes:\n - ${GIT_COMMIT_MESSAGE_SUBJECT} . ${GIT_COMMIT_MESSAGE_BODY}"
           else
             existing_body=$(echo '${{ steps.check_pr.outputs.data }}' | jq -r '.[] | select(.head.ref=="'${{ github.ref_name }}'") | .body')
             new_body="${existing_body}\n - ${GIT_COMMIT_MESSAGE_SUBJECT} ${GIT_COMMIT_MESSAGE_BODY}"

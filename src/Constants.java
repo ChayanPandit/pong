@@ -14,4 +14,7 @@ public class Constants {
 
     public static double TOOL_BAR_HEIGHT;
     public static double INSETS_BOTTOM;
+
+    public static final double BALL_SPEED = 200;
+    public static final double MAX_ANGLE = 45;
 }

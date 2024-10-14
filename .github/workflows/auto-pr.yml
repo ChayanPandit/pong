@@ -62,4 +62,8 @@ jobs:
           base: main
           title: 'Automated PR: ${{ github.ref_name }}'
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ env.body }}
+          body: |
+            This PR was auto-generated from the branch `${{ github.ref_name }}`.
+      
+            ### Changes:
+            - ${GIT_COMMIT_MESSAGE_SUBJECT} . ${GIT_COMMIT_MESSAGE_BODY}

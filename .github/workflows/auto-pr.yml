@@ -66,4 +66,4 @@ jobs:
             This PR was auto-generated from the branch `${{ github.ref_name }}`.
       
             ### Changes:
-            - ${GIT_COMMIT_MESSAGE_SUBJECT} . ${GIT_COMMIT_MESSAGE_BODY}
+            - `${{ GIT_COMMIT_MESSAGE_SUBJECT }}` . `${{ GIT_COMMIT_MESSAGE_BODY }}`
